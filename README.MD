@@ -1,7 +1,8 @@
-Setup/Run check-mk podman container
-Edit host ip/hostname on the inventory
+The playbook downloads the check-mk image, upload the image and runs the check-mk container on podman
 
-* Run: ansible-playbook podman-cmk.yml
+Change the IP/hostname in the inventory file to your target node
+
+* Run: ### ansible-playbook podman-cmk.yml
 
 # URL to access the Check-MK: 
 http://nodeIP:8080/cmk/check_mk/
