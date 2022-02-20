@@ -1,0 +1,55 @@
+---
+- hosts: test
+  become: yes
+  vars:
+    cmk_url: https://download.checkmk.com/checkmk/2.0.0p20/check-mk-free-docker-2.0.0p20.tar.gz
+    cmk_dest: /tmp/
+  tasks:
+  - name: Check podman
+    yum:
+      name: podman
+      state: present
+
+
+  - name: Enable Podmanan     
+    service:
+      name: podman
+      state: started
+      enabled: yes
+
+  - name: Download cmk image
+    get_url:
+      url: "{{ cmk_url }}"
+      dest: "{{ cmk_dest }}" #/tmp/check-mk-free-docker-2.0.0p20.tar.gz
+      mode: '0640'
+
+#  - name: Copy cmk image to tmp from controler node
+#    ansible.builtin.copy:
+#      src: /tmp/cmk/check-mk-free-docker-2.0.0p20.tar.gz
+#      dest: /tmp/check-mk-free-docker-2.0.0p20.tar.gz
+#      remote_src: yes
+
+  - name: Load cmk image
+    containers.podman.podman_load:
+      input: /tmp/check-mk-free-docker-2.0.0p20.tar.gz
+
+  - name: Run container
+    containers.podman.podman_container:
+      name: monitoring
+      image: localhost/checkmk/check-mk-free:2.0.0p20
+      state: started
+      ports: 8080:5000
+      detach: yes
+      interactive: yes
+#      tmpfs: {}
+      volume: monitoring:/omd/sites
+      timezone: Africa/Maputo
+      restart_policy: always
+
+  - name: Get default password
+    shell: podman container logs monitoring | grep 'password:'
+    register: cmkadmin
+
+  - name: Print Passwd
+    debug:
+      var: cmkadmin.stdout
