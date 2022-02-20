@@ -4,6 +4,7 @@
   vars:
     cmk_url: https://download.checkmk.com/checkmk/2.0.0p20/check-mk-free-docker-2.0.0p20.tar.gz
     cmk_dest: /tmp/
+    cmk_filename: check-mk
   tasks:
   - name: Check podman
     yum:
@@ -20,7 +21,7 @@
   - name: Download cmk image
     get_url:
       url: "{{ cmk_url }}"
-      dest: "{{ cmk_dest }}" #/tmp/check-mk-free-docker-2.0.0p20.tar.gz
+      dest: "{{ cmk_dest }}/{{ cmk_filename }}.tar.gz" #/tmp/check-mk-free-docker-2.0.0p20.tar.gz
       mode: '0640'
 
 #  - name: Copy cmk image to tmp from controler node
@@ -31,7 +32,7 @@
 
   - name: Load cmk image
     containers.podman.podman_load:
-      input: /tmp/check-mk-free-docker-2.0.0p20.tar.gz
+      input: "{{ cmk_dest }}/{{ cmk_filename }}.tar.gz"
 
   - name: Run container
     containers.podman.podman_container:
